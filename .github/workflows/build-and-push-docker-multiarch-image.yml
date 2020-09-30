@@ -30,6 +30,7 @@ jobs:
             echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
             TAGS=${TAGS},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
           fi
+          echo "TAGS are setup as: ${TAGS}"
           echo ::set-output name=tags::${TAGS}
 
       - name: Set up QEMU

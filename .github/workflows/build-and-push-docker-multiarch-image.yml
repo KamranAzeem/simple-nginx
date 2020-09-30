@@ -12,6 +12,10 @@ jobs:
     env:
       SHORT_REF: $(basename ${GITHUB_REF})
     steps:
+      - name: show SHORT_REF
+        run: |
+          echo "SHORT_REF is: ${SHORT_REF}"
+
       - name: Checkout
         uses: actions/checkout@v2
 

@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Prepare
+      - name: Prepare Docker Image Tags
         id: prep
         run: |
           SHORT_REF=$(basename ${GITHUB_REF})

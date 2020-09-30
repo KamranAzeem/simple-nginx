@@ -2,17 +2,17 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: 
+      - master
+    tags: 
+      - alpine-*
 
 jobs:
-
-  build:
-
+  docker-build:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build --file Dockerfile --tag simple-nginx:$GITHUB_SHA .
+      run: |
+        if [ ! -z "${GITHUB_REF}" ]; then echo "Building docker image with git tag ${GITHUB_REF}" ; docker build --file Dockerfile --tag kamranazeem/simple-nginx:$GITHUB_REF . ; fi

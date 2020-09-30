@@ -34,4 +34,4 @@ jobs:
           push: true
           tags: |
             kamranazeem/simple-nginx:latest
-            kamranazeem/simple-nginx:1.0.0
+            kamranazeem/simple-nginx:${{ github.ref }}

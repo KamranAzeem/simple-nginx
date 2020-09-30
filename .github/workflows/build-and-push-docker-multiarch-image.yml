@@ -10,7 +10,7 @@ jobs:
   build-and-push-muti-arch-docker-image:
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE=simple-nginx
+      DOCKER_IMAGE: simple-nginx
     
     steps:
 

@@ -11,19 +11,25 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
 
+    # the following are JOB level environment variables
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
+
       run: |
         SHORT_REF=$(basename ${GITHUB_REF})
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
            echo "No tag provided. Building docker image with tag 'latest'" 
-           docker build --file Dockerfile --tag kamranazeem/simple-nginx:latest . 
+           docker build --file Dockerfile --tag ${DOCKER_USER}/simple-nginx:latest . 
            echo docker push kamranazeem/simple-nginx:latest
         fi  
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
            echo "Found tag. Building docker image with tag ${SHORT_REF}" 
-           docker build --file Dockerfile --tag kamranazeem/simple-nginx:${SHORT_REF} . 
+           docker build --file Dockerfile --tag ${DOCKER_USER}/simple-nginx:${SHORT_REF} . 
            echo docker push kamranazeem/simple-nginx:${SHORT_REF}
         fi
 

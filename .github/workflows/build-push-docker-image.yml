@@ -13,7 +13,7 @@ jobs:
 
     # the following are JOB level environment variables
     env:
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_USER: kamranazeem
       DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
     steps:

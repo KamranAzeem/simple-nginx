@@ -21,8 +21,8 @@ jobs:
            docker build --file Dockerfile --tag kamranazeem/simple-nginx:latest . 
            echo docker push kamranazeem/simple-nginx:latest
         fi  
-        if [ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master"  ]; then 
-           echo "Building docker image with tag ${SHORT_REF}" 
+        if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
+           echo "Found tag. Building docker image with tag ${SHORT_REF}" 
            docker build --file Dockerfile --tag kamranazeem/simple-nginx:${SHORT_REF} . 
            echo docker push kamranazeem/simple-nginx:${SHORT_REF}
         fi

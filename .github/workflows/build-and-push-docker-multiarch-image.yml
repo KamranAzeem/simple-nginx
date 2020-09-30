@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_IMAGE: simple-nginx
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     
     steps:
 
@@ -24,13 +25,13 @@ jobs:
           TAGS=""
           if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
             echo "Found git commit on master branch. Setting docker image tag as: 'latest'" 
-            TAGS=${TAGS},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
+            TAGS=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
           fi  
           if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
             echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
-            TAGS=${TAGS},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
+            TAGS=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
           fi
-          echo "TAGS are setup as: ${TAGS}"
+          echo "Complete Docker image-name and tags are setup as: ${TAGS}"
           echo ::set-output name=tags::${TAGS}
 
       - name: Set up QEMU

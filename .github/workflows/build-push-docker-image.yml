@@ -15,4 +15,15 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: |
-        if [ ! -z "${GITHUB_REF}" ]; then echo "Building docker image with git tag ${GITHUB_REF}" ; docker build --file Dockerfile --tag kamranazeem/simple-nginx:$GITHUB_REF . ; fi
+        SHORT_REF=$(basename ${GITHUB_REF})
+        if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
+           echo "No tag provided. Building docker image with tag 'latest'" 
+           docker build --file Dockerfile --tag kamranazeem/simple-nginx:latest . 
+           echo docker push kamranazeem/simple-nginx:latest
+        fi  
+        if [ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master"  ]; then 
+           echo "Building docker image with tag ${SHORT_REF}" 
+           docker build --file Dockerfile --tag kamranazeem/simple-nginx:${SHORT_REF} . 
+           echo docker push kamranazeem/simple-nginx:${SHORT_REF}
+        fi
+

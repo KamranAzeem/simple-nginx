@@ -1,4 +1,4 @@
-name: ci
+name: Docker Image Build and Push - CI Workflow
 
 on:
   push:
@@ -7,17 +7,30 @@ on:
       - alpine-*
 
 jobs:
-  multi:
+  build-and-push-muti-arch-docker-image:
     runs-on: ubuntu-latest
     env:
-      SHORT_REF: $(basename ${GITHUB_REF})
+      DOCKER_IMAGE=simple-nginx
+    
     steps:
-      - name: show SHORT_REF
-        run: |
-          echo "SHORT_REF is: ${SHORT_REF}"
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          SHORT_REF=$(basename ${GITHUB_REF})
+          TAGS=""
+          if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
+            echo "Found git commit on master branch. Setting docker image tag as: 'latest'" 
+            TAGS=${TAGS},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
+          fi  
+          if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
+            echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
+            TAGS=${TAGS},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
+          fi
+          echo ::set-output name=tags::${TAGS}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -38,6 +51,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          tags: |
-            kamranazeem/simple-nginx:latest
-            kamranazeem/simple-nginx:${SHORT_REF}
+          tags: ${{ steps.prep.outputs.tags }}

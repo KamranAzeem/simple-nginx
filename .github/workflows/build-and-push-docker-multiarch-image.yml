@@ -27,6 +27,7 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v2
+        run: SHORT_REF=$(basename ${GITHUB_REF})
         with:
           context: .
           file: ./Dockerfile
@@ -34,4 +35,4 @@ jobs:
           push: true
           tags: |
             kamranazeem/simple-nginx:latest
-            kamranazeem/simple-nginx:${{ github.ref }}
+            kamranazeem/simple-nginx:${SHORT_REF}

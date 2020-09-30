@@ -27,7 +27,8 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v2
-        run: SHORT_REF=$(basename ${GITHUB_REF})
+        env: 
+          - SHORT_REF: $(basename ${GITHUB_REF})
         with:
           context: .
           file: ./Dockerfile

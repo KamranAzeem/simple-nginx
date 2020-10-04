@@ -22,15 +22,17 @@ jobs:
         id: prep
         run: |
           SHORT_REF=$(basename ${GITHUB_REF})
+          SHORT_HASH=${GITHUB_SHA::7}
           TAGS=""
           if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
             echo "Found git commit on master branch. Setting docker image tag as: 'latest'" 
-            TAGS=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
+            TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
           fi  
           if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
             echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
-            TAGS=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
+            TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
           fi
+          TAGS="${TAG},${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_HASH}"
           echo "Complete Docker image-name and tags are setup as: ${TAGS}"
           echo ::set-output name=tags::${TAGS}
 

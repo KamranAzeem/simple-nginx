@@ -11,16 +11,26 @@ jobs:
   docker-multiarch-build-and-push:
     runs-on: ubuntu-latest
 
-    # the following are JOB level environment variables
+    # the following are JOB level/scope environment variables
     env:
       DOCKERHUB_IMAGE: simple-nginx
+      # If DOCKERHUB_USERNAME is setup in github secrets, 
+      #   then local DOCKERHUB_USERNAME can also set as:
+      # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_USERNAME: kamranazeem
+      # The DOCKER_CLI_EXPERIMENTAL needs to exist at job level,
+      #   because it is needed in two separate steps.
+      DOCKER_CLI_EXPERIMENTAL: enabled
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
     - name: Setup correct Docker tags for the build
+      id: prep
       run: |
+        # The SHORT_REF and SHORT_HASH cannot be defined at job level,
+        #   because they only exist **after** the code is checked out. 
         SHORT_REF=$(basename ${GITHUB_REF})
         SHORT_HASH=${GITHUB_SHA::7}
         TAGS=""
@@ -35,15 +45,21 @@ jobs:
         # Always add an extra tag with commit hash.
         TAGS="-t ${TAG} -t ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_HASH}"
         echo "Complete Docker image-name with tags are setup as: ${TAGS}"
+        # The following line sets up a special memory area to hold the 'TAGS' variable.
+        #   This will be referred/used at a later step.
+        #   For this to work, the current step must have an "id".
+        echo ::set-output name=tags::${TAGS}
 
     - name: Setup QEMU 
       run: |
         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     
     - name: Setup Docker Buildx environment
-      env:
-        DOCKER_CLI_EXPERIMENTAL: enabled
-        MULTIARCH_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
+      # "docker buildx" expects that DOCKER_CLI_EXPERIMENTAL variable is set to enabled,
+      #   which is done at job level env variables section, 
+      #   because "docker buildx" is used in next step too.
+      # env:
+      #   DOCKER_CLI_EXPERIMENTAL: enabled
       run: |
         docker buildx create --name multiarch-builder --driver docker-container --use
         docker buildx inspect --bootstrap
@@ -51,10 +67,14 @@ jobs:
     - name: Login to DockerHub
       uses: docker/login-action@v1 
       with:
-        username: ${DOCKERHUB_USERNAME}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build and push multiarch docker image
+      env:
+        MULTIARCH_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
+        # obtain the value of TAGS from the special memory area - defined earlier in the 'prep' step.
+        TAGS: ${{ steps.prep.outputs.tags}}
       run: |
         docker buildx build \
         --platform ${MULTIARCH_PLATFORMS} ${TAGS} . --push

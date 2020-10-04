@@ -36,14 +36,14 @@ jobs:
         TAGS=""
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
           echo "Found git commit on master branch with no tag. Setting docker image tag as: 'latest'" 
-          TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
+          TAG=${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE}:latest
         fi  
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
           echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
-          TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
+          TAG=${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE}:${SHORT_REF}
         fi
         # Always add an extra tag with commit hash.
-        TAGS="-t ${TAG} -t ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_HASH}"
+        TAGS="-t ${TAG} -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_IMAGE}:${SHORT_HASH}"
         echo "Complete Docker image-name with tags are setup as: ${TAGS}"
         # The following line sets up a special memory area to hold the 'TAGS' variable.
         #   This will be referred/used at a later step.
@@ -77,6 +77,7 @@ jobs:
         TAGS: ${{ steps.prep.outputs.tags}}
       run: |
         docker buildx build \
-        --platform ${MULTIARCH_PLATFORMS} ${TAGS} . --push
+        --platform ${MULTIARCH_PLATFORMS} \
+        ${TAGS} . --push
 
 

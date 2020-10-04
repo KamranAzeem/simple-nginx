@@ -23,10 +23,15 @@ jobs:
     steps:
     - name: Checkout code - manually
       # uses: actions/checkout@v2
+      env:
+        FETCH_DEPTH: 1
       run: |
-        git clone ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
+        # A --depth=1 fetch just gets the branch tips and no prior history.
+        #   If you want everything/full repo, use depth=0
+        git clone ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} --depth=${FETCH_DEPTH}
         pwd
         ls -l
+        git log
         echo "---------------------------------------------"
         cd ${GITHUB_WORKSPACE}
         pwd
@@ -35,6 +40,9 @@ jobs:
     - name: Setup correct SHORT_x variables
       id: prep
       run: |
+        pwd
+        ls -l
+        echo "-------------------------------------------------------"
         # The SHORT_REF and SHORT_HASH cannot be defined at job level,
         #   because they only exist **after** the code is checked out. 
         SHORT_REF=$(basename ${GITHUB_REF})

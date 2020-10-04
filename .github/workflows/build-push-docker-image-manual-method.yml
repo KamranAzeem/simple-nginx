@@ -29,6 +29,9 @@ jobs:
     - name: Setup correct Docker tags for the build
       id: prep
       run: |
+        pwd
+        ls -l
+        echo "-------------------------------------------------------"
         # The SHORT_REF and SHORT_HASH cannot be defined at job level,
         #   because they only exist **after** the code is checked out. 
         SHORT_REF=$(basename ${GITHUB_REF})

@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image Multi-Arch Build and Push - Manual Steps - CI Workflow
 
 on:
   push:
@@ -8,28 +8,55 @@ on:
       - alpine-*
 
 jobs:
-  docker-build:
+  docker-multiarch-build-and-push:
     runs-on: ubuntu-latest
 
     # the following are JOB level environment variables
     env:
-      DOCKER_USER: kamranazeem
-      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      DOCKERHUB_IMAGE: simple-nginx
+      DOCKERHUB_USERNAME: kamranazeem
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build the Docker image
 
+    - name: Setup correct Docker tags for the build
       run: |
         SHORT_REF=$(basename ${GITHUB_REF})
+        SHORT_HASH=${GITHUB_SHA::7}
+        TAGS=""
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" == "master" ]]; then 
-           echo "No tag provided. Building docker image with tag 'latest'" 
-           docker build --file Dockerfile --tag ${DOCKER_USER}/simple-nginx:latest . 
-           echo docker push kamranazeem/simple-nginx:latest
+          echo "Found git commit on master branch with no tag. Setting docker image tag as: 'latest'" 
+          TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:latest
         fi  
         if [[ ! -z "${SHORT_REF}" && "${SHORT_REF}" != "master" ]]; then 
-           echo "Found tag. Building docker image with tag ${SHORT_REF}" 
-           docker build --file Dockerfile --tag ${DOCKER_USER}/simple-nginx:${SHORT_REF} . 
-           echo docker push kamranazeem/simple-nginx:${SHORT_REF}
+          echo "Found git tag. Setting docker image tag as: '${SHORT_REF}'" 
+          TAG=${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_REF}
         fi
+        # Always add an extra tag with commit hash.
+        TAGS="-t ${TAG} -t ${DOCKERHUB_USERNAME}/${DOCKER_IMAGE}:${SHORT_HASH}"
+        echo "Complete Docker image-name with tags are setup as: ${TAGS}"
+
+    - name: Setup QEMU 
+      run: |
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    
+    - name: Setup Docker Buildx environment
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        MULTIARCH_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
+      run: |
+        docker buildx create --name multiarch-builder --driver docker-container --use
+        docker buildx inspect --bootstrap
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1 
+      with:
+        username: ${DOCKERHUB_USERNAME}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    -name: Build and push multiarch docker image
+      run: |
+        docker buildx build \
+        --platform ${MULTIARCH_PLATFORMS} ${TAGS} . --push
+
 

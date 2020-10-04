@@ -26,11 +26,15 @@ jobs:
       env:
         FETCH_DEPTH: 1
       run: |
+        pwd
+        ls -l
+        echo "----------------------------------------------"
         # A --depth=1 fetch just gets the branch tips and no prior history.
         #   If you want everything/full repo, use depth=0
         git init .
         git remote add origin ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
-        git fetch --prune --progress --no-recurse-submodules --depth=${FETCH_DEPTH} origin
+        # git fetch --prune --progress --no-recurse-submodules --depth=${FETCH_DEPTH} origin
+        git fetch --no-recurse-submodules --depth=${FETCH_DEPTH} origin
         pwd
         ls -l
         git log

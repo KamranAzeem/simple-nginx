@@ -28,14 +28,13 @@ jobs:
       run: |
         # A --depth=1 fetch just gets the branch tips and no prior history.
         #   If you want everything/full repo, use depth=0
-        git clone ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} --depth=${FETCH_DEPTH}
+        git init .
+        git remote add origin ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
+        git fetch --prune --progress --no-recurse-submodules --depth=${FETCH_DEPTH} origin
         pwd
         ls -l
         git log
         echo "---------------------------------------------"
-        cd ${GITHUB_WORKSPACE}
-        pwd
-        ls -l
 
     - name: Setup correct SHORT_x variables
       id: prep

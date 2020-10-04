@@ -24,9 +24,10 @@ jobs:
     - name: Checkout code - manually
       # uses: actions/checkout@v2
       run: |
-        git clone ${GITHUB_REPOSITORY}
+        git clone ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
         pwd
         ls -l
+        echo "---------------------------------------------"
         cd ${GITHUB_WORKSPACE}
         pwd
         ls -l

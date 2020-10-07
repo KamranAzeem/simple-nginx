@@ -72,7 +72,9 @@ jobs:
         # DOCKERHUB_USERNAME is already defined at job level environment variable section.
         DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_TOKEN}
+        # Below is a securer method to login to docker
+        # Using STDIN prevents the password from ending up in the shell’s history, or log-files.
+        echo ${DOCKERHUB_TOKEN} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
 
     - name: Build and push multiarch docker image
       env:
